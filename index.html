@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifePulse 3D | Next-Gen Smart Blood Donation System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        crimson: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            900: '#881337',
+                            950: '#4c0519',
+                        },
+                        darkbg: '#07070d',
+                        darkcard: 'rgba(18, 18, 28, 0.65)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        urdu: ['Noto Nastaliq Urdu', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-12px) rotate(3deg)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 15px rgba(225, 29, 72, 0.4)' },
+                            '100%': { boxShadow: '0 0 35px rgba(225, 29, 72, 0.8)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #07070d;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        .lang-ur {
+            font-family: 'Noto Nastaliq Urdu', 'Inter', sans-serif;
+            direction: rtl;
+        }
+
+        /* Glassmorphism Styling */
+        .glass-panel {
+            background: rgba(15, 17, 26, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-card {
+            background: rgba(22, 25, 38, 0.55);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(225, 29, 72, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(225, 29, 72, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(225, 29, 72, 0.25);
+        }
+
+        .glass-input {
+            background: rgba(10, 11, 18, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .glass-input:focus {
+            border-color: #e11d48;
+            outline: none;
+            box-shadow: 0 0 12px rgba(225, 29, 72, 0.4);
+        }
+
+        .neon-glow-btn {
+            background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+            box-shadow: 0 0 20px rgba(225, 29, 72, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .neon-glow-btn:hover {
+            box-shadow: 0 0 30px rgba(225, 29, 72, 0.85);
+            transform: scale(1.02);
+        }
+
+        /* Ambient Background Glowing Orbs */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.45;
+        }
+
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, #e11d48 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+        }
+
+        .orb-2 {
+            width: 550px;
+            height: 550px;
+            background: radial-gradient(circle, #881337 0%, transparent 70%);
+            bottom: -150px;
+            right: -150px;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #4c0519 0%, transparent 70%);
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Certificate Styling */
+        .certificate-border {
+            border: 12px solid #1e2030;
+            outline: 2px solid #e11d48;
+            background: linear-gradient(135deg, #0d0e17 0%, #151828 100%);
+            position: relative;
+        }
+
+        .gold-seal {
+            background: radial-gradient(circle, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07070d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #be123c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e11d48;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen text-gray-100 selection:bg-crimson-600 selection:text-white">
+
+    <!-- Ambient Glowing Backdrop -->
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-white/10 px-4 lg:px-8 py-3 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('hero')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-crimson-700 to-crimson-500 flex items-center justify-center shadow-lg shadow-crimson-600/50 animate-pulse-slow">
+                    <i class="fa-solid font-bold fa-heart-pulse text-white text-xl"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-crimson-400">
+                        LifePulse <span class="text-crimson-500 text-2xl">3D</span>
+                    </span>
+                    <span class="text-[10px] text-gray-400 font-medium tracking-widest uppercase -mt-1" id="nav-subtitle">Smart Blood Donation</span>
+                </div>
+            </div>
+
+            <!-- Desktop Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                <button onclick="switchTab('hero')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5 active-tab" data-tab="hero">
+                    <i class="fa-solid fa-house mr-2 text-xs"></i><span data-key="nav_home">Home</span>
+                </button>
+                <button onclick="switchTab('donor')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5" data-tab="donor">
+                    <i class="fa-solid fa-user-plus mr-2 text-xs"></i><span data-key="nav_register">Register Donor</span>
+                </button>
+                <button onclick="switchTab('request')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5" data-tab="request">
+                    <i class="fa-solid fa-hand-holding-medical mr-2 text-xs"></i><span data-key="nav_request">Request Blood</span>
+                </button>
+                <button onclick="switchTab('certificate')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5" data-tab="certificate">
+                    <i class="fa-solid fa-certificate mr-2 text-xs"></i><span data-key="nav_certificate">Get Certificate</span>
+                </button>
+                <button onclick="switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line mr-2 text-xs"></i><span data-key="nav_records">Records</span>
+                </button>
+                <button onclick="switchTab('medical')" class="nav-btn px-4 py-2 rounded-lg text-sm font-medium transition hover:text-crimson-400 hover:bg-white/5" data-tab="medical">
+                    <i class="fa-solid fa-user-doctor mr-2 text-xs"></i><span data-key="nav_advice">Doctor Tips</span>
+                </button>
+            </nav>
+
+            <!-- Language Switcher & Mobile Menu Trigger -->
+            <div class="flex items-center space-x-3">
+                <button id="lang-toggle" onclick="toggleLanguage()" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold tracking-wide transition">
+                    <i class="fa-solid fa-globe text-crimson-400"></i>
+                    <span id="lang-label">اردو</span>
+                </button>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden text-gray-300 hover:text-white p-2 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl" id="mobile-menu-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Nav -->
+        <div id="mobile-menu" class="hidden md:hidden mt-3 pt-3 border-t border-white/10 flex flex-col space-y-2 pb-2">
+            <button onclick="switchTab('hero'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-house w-6 text-crimson-400"></i><span data-key="nav_home">Home</span></button>
+            <button onclick="switchTab('donor'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-user-plus w-6 text-crimson-400"></i><span data-key="nav_register">Register Donor</span></button>
+            <button onclick="switchTab('request'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-hand-holding-medical w-6 text-crimson-400"></i><span data-key="nav_request">Request Blood</span></button>
+            <button onclick="switchTab('certificate'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-certificate w-6 text-crimson-400"></i><span data-key="nav_certificate">Get Certificate</span></button>
+            <button onclick="switchTab('dashboard'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-chart-line w-6 text-crimson-400"></i><span data-key="nav_records">Records</span></button>
+            <button onclick="switchTab('medical'); toggleMobileMenu();" class="text-left px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10"><i class="fa-solid fa-user-doctor w-6 text-crimson-400"></i><span data-key="nav_advice">Doctor Tips</span></button>
+        </div>
+    </header>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-3 pointer-events-none"></div>
+
+    <!-- Main Container -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- TAB 1: HERO SECTION -->
+        <section id="tab-hero" class="tab-content block transition-all duration-500">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center min-h-[calc(100vh-140px)]">
+                <!-- Text Content Column -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left pt-6 lg:pt-0">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full glass-panel border-crimson-500/30 text-xs font-semibold text-crimson-400">
+                        <span class="w-2 h-2 rounded-full bg-crimson-500 animate-ping"></span>
+                        <span data-key="hero_badge">Live Smart Blood Matching Network</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
+                        <span data-key="hero_title1">Connecting Blood</span><br/>
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-crimson-400 via-rose-500 to-red-600" data-key="hero_title2">
+                            Donors & Saving Lives
+                        </span><br/>
+                        <span data-key="hero_title3">In Real-Time</span>
+                    </h1>
+
+                    <p class="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed" data-key="hero_desc">
+                        Empowering donors and acceptors through 3D geographical matching, instant WhatsApp direct connects, OTP verified appreciation certificates, and smart blood availability tracking.
+                    </p>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <button onclick="switchTab('donor')" class="w-full sm:w-auto neon-glow-btn px-8 py-4 rounded-xl text-white font-bold text-base flex items-center justify-center space-x-3">
+                            <i class="fa-solid fa-heart-circle-plus text-lg"></i>
+                            <span data-key="btn_register_hero">Register as Donor</span>
+                        </button>
+                        <button onclick="switchTab('request')" class="w-full sm:w-auto glass-panel hover:bg-white/10 border border-white/20 px-8 py-4 rounded-xl text-white font-bold text-base flex items-center justify-center space-x-3 transition">
+                            <i class="fa-solid fa-kit-medical text-crimson-400 text-lg"></i>
+                            <span data-key="btn_request_hero">Request Blood Urgently</span>
+                        </button>
+                    </div>
+
+                    <!-- Live Stats Counters -->
+                    <div class="grid grid-cols-3 gap-4 pt-8 border-t border-white/10">
+                        <div class="glass-card p-4 rounded-2xl text-center">
+                            <div class="text-2xl sm:text-3xl font-extrabold text-crimson-400" id="stat-donors">1,480+</div>
+                            <div class="text-xs text-gray-400 font-medium mt-1" data-key="stat_donors_lbl">Registered Donors</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-2xl text-center">
+                            <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400" id="stat-lives">3,250+</div>
+                            <div class="text-xs text-gray-400 font-medium mt-1" data-key="stat_lives_lbl">Lives Saved</div>
+                        </div>
+                        <div class="glass-card p-4 rounded-2xl text-center">
+                            <div class="text-2xl sm:text-3xl font-extrabold text-sky-400" id="stat-time">&lt; 15 mins</div>
+                            <div class="text-xs text-gray-400 font-medium mt-1" data-key="stat_time_lbl">Avg Match Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D Interactive Canvas Column -->
+                <div class="lg:col-span-5 h-[420px] lg:h-[540px] relative rounded-3xl overflow-hidden glass-panel border border-crimson-500/20 flex items-center justify-center">
+                    <div id="three-container" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+                    <!-- 3D Interactive Overlay Hint -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] text-gray-300 pointer-events-none flex items-center space-x-2">
+                        <i class="fa-solid fa-hand-pointer animate-bounce text-crimson-400"></i>
+                        <span data-key="canvas_hint">Interactive 3D Heart: Drag to Rotate</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DONOR REGISTRATION -->
+        <section id="tab-donor" class="tab-content hidden transition-all duration-500">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <span class="px-3 py-1 rounded-full glass-panel text-crimson-400 text-xs font-semibold tracking-wider uppercase" data-key="reg_badge">Donor Onboarding</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2" data-key="reg_title">Become a Life Saver</h2>
+                    <p class="text-gray-400 text-sm mt-1" data-key="reg_subtitle">Fill in your details to get listed in the live emergency responder network.</p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-10 rounded-3xl border border-crimson-500/20 shadow-2xl relative">
+                    <form id="donor-form" onsubmit="handleDonorSubmit(event)" class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Full Name -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_fullname">Full Name</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-user absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                                    <input type="text" id="donor-name" required placeholder="John Doe" class="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Age -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_age">Age (Years)</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-cake-candles absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                                    <input type="number" id="donor-age" min="18" max="65" required placeholder="25" class="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Blood Group -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_bloodgroup">Blood Group</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-droplet absolute left-4 top-3.5 text-crimson-400 text-sm"></i>
+                                    <select id="donor-bg" required class="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm bg-darkbg">
+                                        <option value="" disabled selected>Select Blood Group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- WhatsApp Phone Number -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_phone">WhatsApp Number</label>
+                                <div class="relative">
+                                    <i class="fa-brands fa-whatsapp absolute left-4 top-3.5 text-emerald-400 text-base"></i>
+                                    <input type="tel" id="donor-phone" required placeholder="+92 300 1234567" class="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Location / Area -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_location">City / Area Location</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-location-dot absolute left-4 top-3.5 text-rose-400 text-sm"></i>
+                                    <input type="text" id="donor-location" required placeholder="Model Town, City" class="w-full pl-11 pr-24 py-3 rounded-xl glass-input text-sm">
+                                    <button type="button" onclick="detectGPS('donor-location')" class="absolute right-2 top-2 px-3 py-1.5 rounded-lg bg-crimson-600/50 hover:bg-crimson-600 text-[11px] font-semibold transition text-white">
+                                        <i class="fa-solid fa-crosshairs mr-1"></i> GPS
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Last Donation Date -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_lastdonate">Last Donation Date</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-calendar-days absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                                    <input type="date" id="donor-lastdate" required class="w-full pl-11 pr-4 py-3 rounded-xl glass-input text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full neon-glow-btn py-4 rounded-xl text-white font-bold text-base flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span data-key="btn_register_submit">Register as Active Donor</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: ACCEPTOR REQUEST & SMART MATCHING -->
+        <section id="tab-request" class="tab-content hidden transition-all duration-500">
+            <div class="max-w-6xl mx-auto space-y-8">
+                <div class="text-center">
+                    <span class="px-3 py-1 rounded-full glass-panel text-crimson-400 text-xs font-semibold tracking-wider uppercase" data-key="req_badge">Emergency Search</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2" data-key="req_title">Find Nearest Compatible Donors</h2>
+                    <p class="text-gray-400 text-sm mt-1" data-key="req_subtitle">Enter required blood group and location to instantly locate active donors nearby.</p>
+                </div>
+
+                <!-- Request Form Panel -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-crimson-500/20 shadow-xl">
+                    <form id="request-form" onsubmit="handleRequestSearch(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_req_blood">Required Blood Group</label>
+                            <select id="req-bg" required class="w-full px-4 py-3 rounded-xl glass-input text-sm bg-darkbg">
+                                <option value="" disabled selected>Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wider" data-key="lbl_req_location">Your Current Location</label>
+                            <div class="relative">
+                                <input type="text" id="req-location" required placeholder="Enter City / Area" class="w-full px-4 py-3 rounded-xl glass-input text-sm">
+                                <button type="button" onclick="detectGPS('req-location')" class="absolute right-2 top-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold transition">
+                                    <i class="fa-solid fa-location-crosshairs text-crimson-400"></i> GPS
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="w-full neon-glow-btn py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-magnifying-glass-location"></i>
+                                <span data-key="btn_search_donors">Find Nearby Donors</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Match Results Grid -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-users text-crimson-400"></i>
+                            <span data-key="matching_results_title">Matched Available Donors</span>
+                        </h3>
+                        <span id="match-count" class="text-xs text-gray-400">Showing 4 verified donors</span>
+                    </div>
+
+                    <div id="donors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Dynamic Donor Cards will render here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: CERTIFICATE GENERATOR & OTP VERIFICATION -->
+        <section id="tab-certificate" class="tab-content hidden transition-all duration-500">
+            <div class="max-w-4xl mx-auto space-y-8">
+                <div class="text-center">
+                    <span class="px-3 py-1 rounded-full glass-panel text-crimson-400 text-xs font-semibold tracking-wider uppercase" data-key="cert_badge">Official Appreciation</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2" data-key="cert_title">Donor Appreciation Certificate</h2>
+                    <p class="text-gray-400 text-sm mt-1" data-key="cert_subtitle">Enter your Phone Number and complete OTP verification to generate & download your certificate.</p>
+                </div>
+
+                <!-- OTP Verification Box -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-crimson-500/20 max-w-xl mx-auto text-center space-y-6">
+                    <div class="flex items-center justify-center w-16 h-16 rounded-2xl bg-crimson-600/20 border border-crimson-500/40 mx-auto text-crimson-400 text-2xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div id="otp-step-1" class="space-y-4">
+                        <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider" data-key="lbl_otp_phone">Registered Donor WhatsApp / Phone</label>
+                        <input type="tel" id="cert-phone" placeholder="+92 300 1234567" class="w-full px-4 py-3 rounded-xl glass-input text-center text-base tracking-wider">
+                        <button onclick="sendOTP()" class="w-full neon-glow-btn py-3 rounded-xl font-bold text-sm">
+                            <i class="fa-solid fa-paper-plane mr-2"></i><span data-key="btn_send_otp">Send Verification OTP</span>
+                        </button>
+                    </div>
+
+                    <div id="otp-step-2" class="hidden space-y-4">
+                        <p class="text-xs text-emerald-400 font-medium" data-key="otp_sent_msg"><i class="fa-solid fa-circle-check mr-1"></i> OTP Sent! Use demo code: <strong class="text-white font-mono">1234</strong></p>
+                        <input type="text" id="cert-otp-input" maxlength="4" placeholder="1 2 3 4" class="w-full px-4 py-3 rounded-xl glass-input text-center text-xl tracking-[0.5em] font-mono font-bold">
+                        <button onclick="verifyOTP()" class="w-full neon-glow-btn py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-600 to-teal-600">
+                            <i class="fa-solid fa-check-double mr-2"></i><span data-key="btn_verify_otp">Verify & Generate Certificate</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Rendered Certificate Frame -->
+                <div id="certificate-wrapper" class="hidden">
+                    <div id="certificate-print-area" class="certificate-border rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden text-center space-y-6 my-6">
+                        <!-- Top Decorative Header -->
+                        <div class="flex items-center justify-between border-b border-crimson-500/30 pb-6">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-heart-pulse text-crimson-500 text-3xl"></i>
+                                <div class="text-left">
+                                    <h4 class="font-black text-xl text-white tracking-widest uppercase">LifePulse 3D</h4>
+                                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">National Blood Services</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-mono text-crimson-400" id="cert-id-tag">CERT-ID: #LP-88492</span>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Body -->
+                        <div class="space-y-4 py-4">
+                            <h3 class="text-xs uppercase tracking-[0.3em] font-bold text-crimson-400" data-key="cert_header_title">Certificate of Appreciation</h3>
+                            <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-wide font-serif py-2" id="cert-donor-name">JOHN DOE</h1>
+                            <p class="text-sm sm:text-base text-gray-300 max-w-xl mx-auto leading-relaxed" data-key="cert_body_text">
+                                Is hereby awarded this official certificate of honor for your selfless act of blood donation. Your voluntary contribution serves as a beacon of hope and directly helped save human lives.
+                            </p>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10 text-xs">
+                            <div>
+                                <span class="text-gray-400 block" data-key="cert_bg_label">Blood Group</span>
+                                <strong class="text-crimson-400 text-base font-bold" id="cert-donor-bg">O+ Positive</strong>
+                            </div>
+                            <div>
+                                <span class="text-gray-400 block" data-key="cert_date_label">Date of Donation</span>
+                                <strong class="text-white text-base font-bold" id="cert-donor-date">2026-10-10</strong>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <span class="text-gray-400 block" data-key="cert_status_label">Verification Status</span>
+                                <strong class="text-emerald-400 text-base font-bold"><i class="fa-solid fa-circle-check mr-1"></i> OTP Verified</strong>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Seal & Signatures -->
+                        <div class="flex items-center justify-between pt-8">
+                            <div class="text-left">
+                                <div class="w-24 border-b border-gray-400 mb-1"></div>
+                                <span class="text-[11px] text-gray-400" data-key="cert_sig1">Medical Officer</span>
+                            </div>
+
+                            <!-- Gold Ribbon Seal -->
+                            <div class="w-16 h-16 rounded-full gold-seal flex items-center justify-center text-darkbg text-2xl font-black shadow-xl">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+
+                            <div class="text-right">
+                                <div class="w-24 border-b border-gray-400 mb-1 ml-auto"></div>
+                                <span class="text-[11px] text-gray-400" data-key="cert_sig2">Director LifePulse</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Print / Download Button -->
+                    <div class="text-center pt-4">
+                        <button onclick="downloadCertificate()" class="neon-glow-btn px-8 py-3.5 rounded-xl font-bold text-white inline-flex items-center space-x-2">
+                            <i class="fa-solid fa-file-arrow-down text-lg"></i>
+                            <span data-key="btn_download_cert">Download / Print Official Certificate</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: COMPLETED DONATIONS & RECORDS DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content hidden transition-all duration-500">
+            <div class="max-w-6xl mx-auto space-y-8">
+                <div class="text-center">
+                    <span class="px-3 py-1 rounded-full glass-panel text-crimson-400 text-xs font-semibold tracking-wider uppercase" data-key="dash_badge">Live History</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2" data-key="dash_title">Donation Records & Activity</h2>
+                    <p class="text-gray-400 text-sm mt-1" data-key="dash_subtitle">View recent successful donor-acceptor connections and donor eligibility timelines.</p>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-crimson-500 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-crimson-500/20 text-crimson-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-hand-holding-droplet"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-white">428</div>
+                            <div class="text-xs text-gray-400" data-key="dash_stat1">Donations This Month</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-emerald-500 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-white">90 Days</div>
+                            <div class="text-xs text-gray-400" data-key="dash_stat2">Next Eligible Interval</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-sky-500 flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-hospital-user"></i>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-black text-white">100%</div>
+                            <div class="text-xs text-gray-400" data-key="dash_stat3">Free Voluntary Service</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table / List of Completed Matches -->
+                <div class="glass-panel rounded-3xl p-6 overflow-x-auto border border-white/10">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+                        <i class="fa-solid fa-receipt text-crimson-400"></i>
+                        <span data-key="recent_trans_title">Recent Verified Donations</span>
+                    </h3>
+
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/10 text-xs text-gray-400 uppercase tracking-wider">
+                                <th class="py-3 px-4" data-key="th_donor">Donor Name</th>
+                                <th class="py-3 px-4" data-key="th_blood">Group</th>
+                                <th class="py-3 px-4" data-key="th_location">Location</th>
+                                <th class="py-3 px-4" data-key="th_lastdate">Last Donation</th>
+                                <th class="py-3 px-4" data-key="th_nexteligible">Next Eligible</th>
+                                <th class="py-3 px-4" data-key="th_status">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="text-sm divide-y divide-white/5">
+                            <!-- Dynamic Table Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: DOCTOR'S PRECAUTIONS & HEALTH GUIDELINES -->
+        <section id="tab-medical" class="tab-content hidden transition-all duration-500">
+            <div class="max-w-5xl mx-auto space-y-8">
+                <div class="text-center">
+                    <span class="px-3 py-1 rounded-full glass-panel text-crimson-400 text-xs font-semibold tracking-wider uppercase" data-key="doc_badge">Medical Expertise</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold mt-2" data-key="doc_title">Doctor's Advice & Donation Precautions</h2>
+                    <p class="text-gray-400 text-sm mt-1" data-key="doc_subtitle">Essential medical guidelines for before, during, and after blood donation.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Before Donation Card -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 border-l-4 border-l-crimson-500">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-crimson-500/20 text-crimson-400 flex items-center justify-center font-bold text-lg">1</div>
+                            <h3 class="text-xl font-bold text-white" data-key="doc_pre_title">Before Blood Donation</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-crimson-400 mt-1"></i>
+                                <span data-key="doc_pre_1">Drink plenty of water or healthy fluids (at least 500ml) prior to donation.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-crimson-400 mt-1"></i>
+                                <span data-key="doc_pre_2">Eat a healthy, low-fat meal 2-3 hours before donating. Avoid fasting.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-crimson-400 mt-1"></i>
+                                <span data-key="doc_pre_3">Ensure you get a full 7-8 hours of sound sleep the night before.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- After Donation Card -->
+                    <div class="glass-card p-6 rounded-3xl space-y-4 border-l-4 border-l-emerald-500">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">2</div>
+                            <h3 class="text-xl font-bold text-white" data-key="doc_post_title">After Blood Donation</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span data-key="doc_post_1">Rest for 10-15 minutes at the donation site and enjoy refreshments.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span data-key="doc_post_2">Avoid heavy lifting or strenuous physical exercise for 24 hours.</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                                <i class="fa-solid fa-check text-emerald-400 mt-1"></i>
+                                <span data-key="doc_post_3">Keep the bandage on your arm for at least 4 hours and keep it dry.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- FAQs Accordion -->
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl space-y-4">
+                    <h3 class="text-xl font-bold text-white mb-4" data-key="faq_title">Frequently Asked Medical Questions</h3>
+
+                    <div class="border-b border-white/10 pb-4">
+                        <button onclick="toggleFaq('faq1')" class="w-full text-left font-semibold text-crimson-400 flex justify-between items-center py-2">
+                            <span data-key="faq1_q">How often can I safely donate blood?</span>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <p id="faq1" class="text-sm text-gray-300 mt-2 hidden" data-key="faq1_a">
+                            Healthy adult males can donate blood every 90 days (3 months), while females can safely donate every 120 days (4 months).
+                        </p>
+                    </div>
+
+                    <div class="border-b border-white/10 pb-4">
+                        <button onclick="toggleFaq('faq2')" class="w-full text-left font-semibold text-crimson-400 flex justify-between items-center py-2">
+                            <span data-key="faq2_q">Will donating blood make me weak or sick?</span>
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
+                        </button>
+                        <p id="faq2" class="text-sm text-gray-300 mt-2 hidden" data-key="faq2_a">
+                            No. Your body naturally replenishes the lost fluid volume within 24 to 48 hours, and red blood cells are fully regenerated within a few weeks.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/10 glass-panel mt-16 py-8 text-center text-xs text-gray-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-heart text-crimson-500"></i>
+                <span>LifePulse 3D Blood Bank Network &copy; 2026. All rights reserved.</span>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" onclick="switchTab('medical')" class="hover:text-white transition" data-key="nav_advice">Medical Guidelines</a>
+                <a href="#" onclick="switchTab('request')" class="hover:text-white transition" data-key="nav_request">Emergency Blood Search</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           1. APPLICATION STATE & DUAL-LANGUAGE DICTIONARY (ENGLISH / URDU)
+           ========================================================================== */
+        let currentLang = 'en';
+
+        const i18n = {
+            en: {
+                nav_home: "Home",
+                nav_register: "Register Donor",
+                nav_request: "Request Blood",
+                nav_certificate: "Get Certificate",
+                nav_records: "Records",
+                nav_advice: "Doctor Tips",
+                hero_badge: "Live Smart Blood Matching Network",
+                hero_title1: "Connecting Blood",
+                hero_title2: "Donors & Saving Lives",
+                hero_title3: "In Real-Time",
+                hero_desc: "Empowering donors and acceptors through 3D geographical matching, instant WhatsApp direct connects, OTP verified appreciation certificates, and smart blood availability tracking.",
+                btn_register_hero: "Register as Donor",
+                btn_request_hero: "Request Blood Urgently",
+                stat_donors_lbl: "Registered Donors",
+                stat_lives_lbl: "Lives Saved",
+                stat_time_lbl: "Avg Match Time",
+                canvas_hint: "Interactive 3D Heart: Drag to Rotate",
+                reg_badge: "Donor Onboarding",
+                reg_title: "Become a Life Saver",
+                reg_subtitle: "Fill in your details to get listed in the live emergency responder network.",
+                lbl_fullname: "Full Name",
+                lbl_age: "Age (Years)",
+                lbl_bloodgroup: "Blood Group",
+                lbl_phone: "WhatsApp Number",
+                lbl_location: "City / Area Location",
+                lbl_lastdate: "Last Donation Date",
+                btn_register_submit: "Register as Active Donor",
+                req_badge: "Emergency Search",
+                req_title: "Find Nearest Compatible Donors",
+                req_subtitle: "Enter required blood group and location to instantly locate active donors nearby.",
+                lbl_req_blood: "Required Blood Group",
+                lbl_req_location: "Your Current Location",
+                btn_search_donors: "Find Nearby Donors",
+                matching_results_title: "Matched Available Donors",
+                cert_badge: "Official Appreciation",
+                cert_title: "Donor Appreciation Certificate",
+                cert_subtitle: "Enter your Phone Number and complete OTP verification to generate & download your certificate.",
+                lbl_otp_phone: "Registered Donor WhatsApp / Phone",
+                btn_send_otp: "Send Verification OTP",
+                otp_sent_msg: "OTP Sent! Use demo code: 1234",
+                btn_verify_otp: "Verify & Generate Certificate",
+                cert_header_title: "Certificate of Appreciation",
+                cert_body_text: "Is hereby awarded this official certificate of honor for your selfless act of blood donation. Your voluntary contribution serves as a beacon of hope and directly helped save human lives.",
+                cert_bg_label: "Blood Group",
+                cert_date_label: "Date of Donation",
+                cert_status_label: "Verification Status",
+                cert_sig1: "Medical Officer",
+                cert_sig2: "Director LifePulse",
+                btn_download_cert: "Download / Print Official Certificate",
+                dash_badge: "Live History",
+                dash_title: "Donation Records & Activity",
+                dash_subtitle: "View recent successful donor-acceptor connections and donor eligibility timelines.",
+                dash_stat1: "Donations This Month",
+                dash_stat2: "Next Eligible Interval",
+                dash_stat3: "Free Voluntary Service",
+                recent_trans_title: "Recent Verified Donations",
+                th_donor: "Donor Name",
+                th_blood: "Group",
+                th_location: "Location",
+                th_lastdate: "Last Donation",
+                th_nexteligible: "Next Eligible",
+                th_status: "Status",
+                doc_badge: "Medical Expertise",
+                doc_title: "Doctor's Advice & Donation Precautions",
+                doc_subtitle: "Essential medical guidelines for before, during, and after blood donation.",
+                doc_pre_title: "Before Blood Donation",
+                doc_pre_1: "Drink plenty of water or healthy fluids (at least 500ml) prior to donation.",
+                doc_pre_2: "Eat a healthy, low-fat meal 2-3 hours before donating. Avoid fasting.",
+                doc_pre_3: "Ensure you get a full 7-8 hours of sound sleep the night before.",
+                doc_post_title: "After Blood Donation",
+                doc_post_1: "Rest for 10-15 minutes at the donation site and enjoy refreshments.",
+                doc_post_2: "Avoid heavy lifting or strenuous physical exercise for 24 hours.",
+                doc_post_3: "Keep the bandage on your arm for at least 4 hours and keep it dry.",
+                faq_title: "Frequently Asked Medical Questions",
+                faq1_q: "How often can I safely donate blood?",
+                faq1_a: "Healthy adult males can donate blood every 90 days (3 months), while females can safely donate every 120 days (4 months).",
+                faq2_q: "Will donating blood make me weak or sick?",
+                faq2_a: "No. Your body naturally replenishes the lost fluid volume within 24 to 48 hours, and red blood cells are fully regenerated within a few weeks."
+            },
+            ur: {
+                nav_home: "ہوم",
+                nav_register: "ڈونر رجسٹریشن",
+                nav_request: "بلڈ کی ضرورت",
+                nav_certificate: "سرٹیفکیٹ لیں",
+                nav_records: "ریکارڈز",
+                nav_advice: "ڈاکٹر کی ہدایات",
+                hero_badge: "لائیو سمارٹ بلڈ ڈونیشن نیٹ ورک",
+                hero_title1: "خون کے عطیات کے ذریعے",
+                hero_title2: "انسانی جانیں بچائیں",
+                hero_title3: "برقت اور آسان",
+                hero_desc: "تھری ڈی لوکیشن میچنگ، واٹس ایپ کنیکٹ، او ٹی پی ویریفائیڈ سرٹیفکیٹ اور خون کی فوری دستیابی کا جدید ترین نظام۔",
+                btn_register_hero: "ڈونر کے طور پر رجسٹر ہوں",
+                btn_request_hero: "فوراً بلڈ کی درخواست کریں",
+                stat_donors_lbl: "رجسٹرڈ ڈونرز",
+                stat_lives_lbl: "محفوظ کی گئی جانیں",
+                stat_time_lbl: "اوسط وقت",
+                canvas_hint: "تھری ڈی دل: گھمانے کے لیے ڈریگ کریں",
+                reg_badge: "ڈونر فارم",
+                reg_title: "جان بچانے والے بنیں",
+                reg_subtitle: "ایمرجنسی رسپانڈر نیٹ ورک میں شامل ہونے کے لیے اپنی معلومات درج کریں۔",
+                lbl_fullname: "مکمل نام",
+                lbl_age: "عمر (سال)",
+                lbl_bloodgroup: "بلڈ گروپ",
+                lbl_phone: "واٹس ایپ نمبر",
+                lbl_location: "شہر / علاقہ",
+                lbl_lastdate: "آخری بار بلڈ دینے کی تاریخ",
+                btn_register_submit: "ڈونر کے طور پر رجسٹر کریں",
+                req_badge: "ایمرجنسی تلاش",
+                req_title: "قریب ترین ڈونرز تلاش کریں",
+                req_subtitle: "اپنا مطلوبہ بلڈ گروپ اور لوکیشن درج کر کے فوری ڈونرز سے رابطہ کریں۔",
+                lbl_req_blood: "مطلوبہ بلڈ گروپ",
+                lbl_req_location: "آپ کی موجودہ لوکیشن",
+                btn_search_donors: "قریب ترین ڈونرز تلاش کریں",
+                matching_results_title: "دستیاب ڈونرز کی فہرست",
+                cert_badge: "سرکاری تعریف",
+                cert_title: "ڈونر ایپریسی ایشن سرٹیفکیٹ",
+                cert_subtitle: "اپنا رجسٹرڈ فون نمبر اور او ٹی پی درج کر کے اپنا سند حاصل کریں۔",
+                lbl_otp_phone: "رجسٹرڈ واٹس ایپ / فون نمبر",
+                btn_send_otp: "او ٹی پی کوڈ بھیجیں",
+                otp_sent_msg: "او ٹی پی بھیج دیا گیا! کوڈ ہے: 1234",
+                btn_verify_otp: "تصدیق کریں اور سرٹیفکیٹ جنریٹ کریں",
+                cert_header_title: "سرٹیفکیٹ آف ایپریسی ایشن",
+                cert_body_text: "خون کا عطیہ دے کر انسانی جان بچانے کے اس عظیم اور مخلصانہ عمل پر آپ کو یہ اعزازی سند پیش کی جاتی ہے۔",
+                cert_bg_label: "بلڈ گروپ",
+                cert_date_label: "عطیہ کی تاریخ",
+                cert_status_label: "تصدیقی حیثیت",
+                cert_sig1: "میڈیکل آفیسر",
+                cert_sig2: "ڈائریکٹر لائف پلس",
+                btn_download_cert: "سرٹیفکیٹ ڈاؤن لوڈ یا پرنٹ کریں",
+                dash_badge: "لائیو ہسٹری",
+                dash_title: "ڈونیشن ریکارڈز اور سرگرمیاں",
+                dash_subtitle: "حالیہ کامیاب عطیات اور ڈونرز کی اہلیت کی تفصیلات دیکھیں۔",
+                dash_stat1: "اس ماہ کے عطیات",
+                dash_stat2: "اگلی اہلیت کا وقفہ",
+                dash_stat3: "مفت رضاکارانہ خدمت",
+                recent_trans_title: "حالیہ تصدیق شدہ عطیات",
+                th_donor: "ڈونر کا نام",
+                th_blood: "گروپ",
+                th_location: "لوکیشن",
+                th_lastdate: "آخری عطیہ",
+                th_nexteligible: "اگلی اہلیت",
+                th_status: "حیثیت",
+                doc_badge: "طبی ہدایات",
+                doc_title: "ڈاکٹر کی ہدایات اور احتیاطی تدابیر",
+                doc_subtitle: "خون دینے سے پہلے اور بعد کی ضروری طبی تدابیر۔",
+                doc_pre_title: "خون دینے سے پہلے",
+                doc_pre_1: "خون دینے سے پہلے کثرت سے پانی یا جوس پیئیں۔",
+                doc_pre_2: "خون دینے سے 2-3 گھنٹے پہلے ہلکی اور غذائیت سے بھرپور خوراک کھائیں۔",
+                doc_pre_3: "رات کو کم از کم 7 سے 8 گھنٹے کی مکمل نیند لیں۔",
+                doc_post_title: "خون دینے کے بعد",
+                doc_post_1: "خون دینے کے بعد 10 سے 15 منٹ آرام کریں اور جوس پیئیں۔",
+                doc_post_2: "24 گھنٹے تک سخت جسمانی مشقت یا بھاری وزن اٹھانے سے گریز کریں۔",
+                doc_post_3: "پٹی کو کم از کم 4 گھنٹے تک بازو پر لگا رہنے دیں۔",
+                faq_title: "عام طبی سوالات",
+                faq1_q: "انسان کتنے عرصے بعد دوبارہ خون دے سکتا ہے؟",
+                faq1_a: "صحت مند مرد ہر 90 دن (3 ماہ) اور خواتین ہر 120 دن (4 ماہ) بعد خون دے سکتی ہیں۔",
+                faq2_q: "کیا خون دینے سے کمزوری یا بیماری ہوتی ہے؟",
+                faq2_a: "جی نہیں، انسانی جسم 24 سے 48 گھنٹوں میں خون کا حجم دوبارہ پورا کر لیتا ہے۔"
+            }
+        };
+
+        // Initial Sample Donors Dataset
+        let donorsList = [
+            { id: 1, name: "Ali Raza", bg: "O+", phone: "+923001234567", location: "Gulberg, Lahore", distance: "0.8 km away", lastDate: "2026-06-12", age: 26 },
+            { id: 2, name: "Usman Khan", bg: "A+", phone: "+923219876543", location: "DHA Phase 5, Lahore", distance: "2.1 km away", lastDate: "2026-05-20", age: 31 },
+            { id: 3, name: "Hamza Tariq", bg: "B+", phone: "+923334567890", location: "Johar Town, Lahore", distance: "3.4 km away", lastDate: "2026-07-01", age: 24 },
+            { id: 4, name: "Bilal Ahmed", bg: "O-", phone: "+923125554433", location: "F-7, Islamabad", distance: "1.5 km away", lastDate: "2026-04-10", age: 29 },
+            { id: 5, name: "Zainab Bibi", bg: "AB+", phone: "+923017778899", location: "Saddar, Karachi", distance: "4.0 km away", lastDate: "2026-06-25", age: 22 }
+        ];
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ur' : 'en';
+            document.getElementById('lang-label').innerText = currentLang === 'en' ? 'اردو' : 'English';
+            
+            if (currentLang === 'ur') {
+                document.body.classList.add('lang-ur');
+            } else {
+                document.body.classList.remove('lang-ur');
+            }
+
+            // Translate DOM elements with data-key
+            document.querySelectorAll('[data-key]').forEach(elem => {
+                const key = elem.getAttribute('data-key');
+                if (i18n[currentLang][key]) {
+                    elem.innerText = i18n[currentLang][key];
+                }
+            });
+
+            showToast(currentLang === 'en' ? "Language changed to English" : "زبان اردو میں تبدیل کر دی گئی ہے", "info");
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+                tab.classList.remove('block');
+            });
+
+            const activeContent = document.getElementById(`tab-${tabId}`);
+            if (activeContent) {
+                activeContent.classList.remove('hidden');
+                activeContent.classList.add('block');
+            }
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('text-crimson-400', 'bg-white/10');
+                } else {
+                    btn.classList.remove('text-crimson-400', 'bg-white/10');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleFaq(id) {
+            const elem = document.getElementById(id);
+            elem.classList.toggle('hidden');
+        }
+
+        function detectGPS(inputId) {
+            if (navigator.geolocation) {
+                showToast("Fetching your current GPS coordinates...", "info");
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById(inputId).value = "Near Current GPS Location";
+                        showToast("GPS Location auto-detected successfully!", "success");
+                    },
+                    () => {
+                        document.getElementById(inputId).value = "Central City Area";
+                        showToast("GPS permission denied. Using estimated location.", "warning");
+                    }
+                );
+            } else {
+                showToast("Geolocation is not supported by your browser.", "error");
+            }
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-darkbg border-crimson-500/50 text-white";
+            let icon = "fa-info-circle text-crimson-400";
+
+            if (type === "success") {
+                bgClass = "bg-darkbg border-emerald-500/50 text-white";
+                icon = "fa-circle-check text-emerald-400";
+            } else if (type === "warning") {
+                bgClass = "bg-darkbg border-amber-500/50 text-white";
+                icon = "fa-triangle-exclamation text-amber-400";
+            }
+
+            toast.className = `glass-panel px-4 py-3 rounded-xl border ${bgClass} shadow-2xl text-xs sm:text-sm font-medium flex items-center space-x-3 transition-all duration-300 transform translate-y-2 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function handleDonorSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('donor-name').value;
+            const bg = document.getElementById('donor-bg').value;
+            const phone = document.getElementById('donor-phone').value;
+            const location = document.getElementById('donor-location').value;
+            const lastDate = document.getElementById('donor-lastdate').value;
+            const age = document.getElementById('donor-age').value;
+
+            const newDonor = {
+                id: Date.now(),
+                name,
+                bg,
+                phone,
+                location,
+                distance: "0.5 km away",
+                lastDate,
+                age
+            };
+
+            donorsList.unshift(newDonor);
+            renderDonorGrid(donorsList);
+            renderHistoryTable();
+
+            showToast(`Thank you, ${name}! You are now registered as an active donor.`, "success");
+            document.getElementById('donor-form').reset();
+            switchTab('request');
+        }
+
+        function handleRequestSearch(e) {
+            e.preventDefault();
+            const bg = document.getElementById('req-bg').value;
+            const loc = document.getElementById('req-location').value;
+
+            const filtered = donorsList.filter(d => d.bg === bg);
+            if (filtered.length > 0) {
+                renderDonorGrid(filtered);
+                showToast(`Found ${filtered.length} matching donor(s) nearby!`, "success");
+            } else {
+                renderDonorGrid(donorsList);
+                showToast(`No exact group match found for ${bg}. Showing all active donors nearby.`, "warning");
+            }
+        }
+
+        function renderDonorGrid(list) {
+            const grid = document.getElementById('donors-grid');
+            grid.innerHTML = '';
+
+            document.getElementById('match-count').innerText = `Showing ${list.length} verified donors`;
+
+            list.forEach(donor => {
+                const whatsappUrl = `https://wa.me/${donor.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(donor.name)},%20I%20found%20your%20profile%20on%20LifePulse%203D.%20We%20urgently%20need%20${encodeURIComponent(donor.bg)}%20blood.`;
+
+                const card = document.createElement('div');
+                card.className = 'glass-card p-6 rounded-2xl relative space-y-4';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-crimson-600/20 border border-crimson-500/30 text-crimson-400 flex items-center justify-center font-black text-lg">
+                            ${donor.bg}
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold">
+                            <i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i> Available
+                        </span>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-bold text-white">${donor.name}</h4>
+                        <p class="text-xs text-gray-400 flex items-center mt-1">
+                            <i class="fa-solid fa-location-dot text-rose-400 mr-1.5"></i> ${donor.location} (${donor.distance})
+                        </p>
+                    </div>
+
+                    <div class="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-gray-300">
+                        <span>Last Donated: <strong class="text-white">${donor.lastDate}</strong></span>
+                        <span>Age: <strong class="text-white">${donor.age || 25} yrs</strong></span>
+                    </div>
+
+                    <a href="${whatsappUrl}" target="_blank" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-600/30">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>Contact via WhatsApp</span>
+                    </a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function sendOTP() {
+            const phone = document.getElementById('cert-phone').value;
+            if (!phone) {
+                showToast("Please enter a valid donor phone number.", "warning");
+                return;
+            }
+
+            document.getElementById('otp-step-1').classList.add('hidden');
+            document.getElementById('otp-step-2').classList.remove('hidden');
+            showToast("Demo OTP code sent to your phone: 1234", "success");
+        }
+
+        function verifyOTP() {
+            const code = document.getElementById('cert-otp-input').value;
+            const phone = document.getElementById('cert-phone').value;
+
+            if (code === '1234') {
+                const matchedDonor = donorsList.find(d => d.phone.includes(phone.slice(-6))) || donorsList[0];
+                
+                document.getElementById('cert-donor-name').innerText = matchedDonor.name.toUpperCase();
+                document.getElementById('cert-donor-bg').innerText = matchedDonor.bg;
+                document.getElementById('cert-donor-date').innerText = new Date().toISOString().split('T')[0];
+
+                document.getElementById('certificate-wrapper').classList.remove('hidden');
+                showToast("OTP Verified Successfully! Certificate generated.", "success");
+            } else {
+                showToast("Invalid OTP Code! Use 1234 for demo verification.", "error");
+            }
+        }
+
+        function downloadCertificate() {
+            window.print();
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+
+            donorsList.forEach(donor => {
+                const last = new Date(donor.lastDate);
+                const next = new Date(last);
+                next.setDate(next.getDate() + 90);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/5 transition';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-semibold text-white">${donor.name}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-crimson-500/20 text-crimson-400 font-bold text-xs">${donor.bg}</span></td>
+                    <td class="py-3 px-4 text-gray-300 text-xs">${donor.location}</td>
+                    <td class="py-3 px-4 text-gray-300 text-xs">${donor.lastDate}</td>
+                    <td class="py-3 px-4 text-emerald-400 text-xs font-semibold">${next.toISOString().split('T')[0]}</td>
+                    <td class="py-3 px-4"><span class="text-xs text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Verified</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function initThreeJS() {
+            const container = document.getElementById('three-container');
+            if (!container) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 12;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xf43f5e, 2.5, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            const pointLight2 = new THREE.PointLight(0xe11d48, 2, 100);
+            pointLight2.position.set(-10, -10, -10);
+            scene.add(pointLight2);
+
+            // Create Stylized 3D Heart Mesh
+            const heartShape = new THREE.Shape();
+            const x = 0, y = 0;
+            heartShape.moveTo(x + 25, y + 25);
+            heartShape.bezierCurveTo(x + 25, y + 25, x + 20, y, x, y);
+            heartShape.bezierCurveTo(x - 30, y, x - 30, y + 35, x - 30, y + 35);
+            heartShape.bezierCurveTo(x - 30, y + 55, x - 10, y + 77, x + 25, y + 95);
+            heartShape.bezierCurveTo(x + 60, y + 77, x + 80, y + 55, x + 80, y + 35);
+            heartShape.bezierCurveTo(x + 80, y + 35, x + 80, y, x + 50, y);
+            heartShape.bezierCurveTo(x + 35, y, x + 25, y + 25, x + 25, y + 25);
+
+            const extrudeSettings = { depth: 12, bevelEnabled: true, bevelSegments: 6, steps: 2, bevelSize: 4, bevelThickness: 4 };
+            const geometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+            geometry.center();
+
+            const material = new THREE.MeshPhongMaterial({
+                color: 0xe11d48,
+                emissive: 0x4c0519,
+                shininess: 100,
+                specular: 0xfb7185,
+                wireframe: false
+            });
+
+            const heartMesh = new THREE.Mesh(geometry, material);
+            heartMesh.scale.set(0.045, 0.045, 0.045);
+            heartMesh.rotation.x = Math.PI;
+            scene.add(heartMesh);
+
+            // Floating Particles Ring
+            const particlesGeo = new THREE.BufferGeometry();
+            const count = 250;
+            const positions = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 20;
+            }
+
+            particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particlesMat = new THREE.PointsMaterial({
+                size: 0.08,
+                color: 0xfb7185,
+                transparent: true,
+                opacity: 0.7
+            });
+
+            const particleSystem = new THREE.Points(particlesGeo, particlesMat);
+            scene.add(particleSystem);
+
+            // Mouse Interaction Drag logic
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.addEventListener('mousedown', () => isDragging = true);
+            container.addEventListener('mouseup', () => isDragging = false);
+            container.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaMove = { x: e.offsetX - previousMousePosition.x, y: e.offsetY - previousMousePosition.y };
+                    heartMesh.rotation.y += deltaMove.x * 0.01;
+                    heartMesh.rotation.x += deltaMove.y * 0.01;
+                }
+                previousMousePosition = { x: e.offsetX, y: e.offsetY };
+            });
+
+            // Touch support for mobile
+            container.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    heartMesh.rotation.y += 0.02;
+                }
+            });
+
+            // Animation Loop
+            let clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const elapsedTime = clock.getElapsedTime();
+                const scale = 0.045 + Math.sin(elapsedTime * 3) * 0.003; // Heartbeat pulse effect
+                heartMesh.scale.set(scale, scale, scale);
+
+                if (!isDragging) {
+                    heartMesh.rotation.y += 0.008;
+                }
+
+                particleSystem.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            // Resize handle
+            window.addEventListener('resize', () => {
+                if (!container) return;
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+
+        window.onload = function () {
+            renderDonorGrid(donorsList);
+            renderHistoryTable();
+            initThreeJS();
+        };
+    </script>
+</body>
+</html>
